@@ -1,9 +1,17 @@
 name: GitHub Actions Test
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   production-deploy:
     runs-on: ubuntu-latest
+    
+    environment:
+      name: production
+    
     steps:
       - uses: actions/checkout@v4
         with:
@@ -11,4 +19,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11' 
-      - run: python3 main/main.py
+      - run: |
+          python3 main/main.py &
+          sleep 5 && curl -v http://127.0.0.1:18080 2>&1 > log
+          cat log
+        env:
+          CDC_SECRET_VALUE: ${{ secrets.CDC_SECRET_VALUE }}
